@@ -1,18 +1,20 @@
-interface BoilerConnection {
+import WebSocket from 'ws'
+
+export interface BoilerConnection {
     isConnected: boolean,
     appId: string,
     temperature: number,
     isOn: boolean,
-    lastSeen: Date,
+    lastSeen: number,
     socket: WebSocket
 }
 
-interface AppConnection {
+export interface AppConnection {
     socket: WebSocket,
     boilerIds: string[]
 }
 
-interface Message {
+export interface Message {
     type: "boiler_init" | "boiler_update" | "app_init" | "command",
     boilerId?: string,
     appId?: string,

@@ -1,4 +1,5 @@
-import WebSocket, { Server } from "ws"
+import WebSocket from "ws"
+import { AppConnection, BoilerConnection, Message } from "./types"
 
 const boilers = new Map<string, BoilerConnection>()
 const apps = new Map<string, AppConnection>()
@@ -8,33 +9,47 @@ const apps = new Map<string, AppConnection>()
 export function processMessage(message: Message, ws: WebSocket) {
     switch (message.type) {
         case "boiler_init":
-            handleBoilerInit(message, ws)
+            processBoilerInit(message, ws)
             break
         case "boiler_update":
-            handleBoilerUpdate(message)
+            processBoilerUpdate(message)
             break
         case "app_init":
-            handleAppInit(message, ws)
+            processAppInit(message, ws)
             break
         case "command":
-            handleCommand(message)
+            processCommand(message)
             break
     }
 }
 
-function handleBoilerInit(message: Message, ws: WebSocket) {
+function processBoilerInit(message: Message, ws: WebSocket) {
     const boilerId = message.boilerId
     const appId = message.appId
     const temperature = message.temperature
     const isOn = message.isOn
 
-    if (!boilerId || !appId || temperature === undefined || isOn === undefined) {
+    if (!ws || !boilerId || !appId || temperature === undefined || isOn === undefined) {
         console.error("[Boiler Init] Invalid message:", message)
         return
     }
+
+    if (boilers.has(boilerId)) {
+        processBoilerUpdate(message)
+        return
+    }
+
+    boilers.set(boilerId, {
+        isConnected: false,
+        appId: appId,
+        temperature: temperature,
+        isOn: isOn,
+        lastSeen: Date.now(),
+        socket: ws
+    })
 }
 
-function handleBoilerUpdate(message: Message) {
+function processBoilerUpdate(message: Message) {
     const boilerId = message.boilerId
     const temperature = message.temperature
     const isOn = message.isOn
@@ -45,7 +60,7 @@ function handleBoilerUpdate(message: Message) {
     }
 }
 
-function handleAppInit(message: Message, ws: WebSocket) {
+function processAppInit(message: Message, ws: WebSocket) {
     const appId = message.appId
     const boilerIds = message.boilerIds
 
@@ -55,7 +70,7 @@ function handleAppInit(message: Message, ws: WebSocket) {
     }
 }
 
-function handleCommand(message: Message) {
+function processCommand(message: Message) {
     const appId = message.appId
     const boilerId = message.boilerId
     const action = message.action
