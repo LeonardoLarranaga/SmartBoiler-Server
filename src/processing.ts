@@ -23,6 +23,12 @@ export function processMessage(message: Message, ws: WebSocket) {
     }
 }
 
+/**
+ * Adds a new boiler to the list of connected boilers.
+ * If the boiler already exists, it updates the existing entry.
+ * @param message A message from the boiler
+ * @param ws The WebSocket connection to the boiler
+ */
 function processBoilerInit(message: Message, ws: WebSocket) {
     const boilerId = message.boilerId
     const appId = message.appId
@@ -47,8 +53,16 @@ function processBoilerInit(message: Message, ws: WebSocket) {
         lastSeen: Date.now(),
         socket: ws
     })
+
+    console.log("[Boiler Init] Boiler added:", boilerId)
 }
 
+/**
+ * Updates the boiler's state in the list of connected boilers.
+ * This is called when the boiler sends an update message.
+ * After updating the state, the server sends the updated state to all connected apps.
+ * @param message A message from the boiler
+ */
 function processBoilerUpdate(message: Message) {
     const boilerId = message.boilerId
     const temperature = message.temperature
@@ -58,6 +72,29 @@ function processBoilerUpdate(message: Message) {
         console.error("[Boiler Update] Invalid message:", message)
         return
     }
+
+    const boiler = boilers.get(boilerId)
+    if (!boiler) {
+        console.error("[Boiler Update] Boiler not found:", boilerId)
+        return
+    }
+    boiler.temperature = temperature
+    boiler.isOn = isOn
+    boiler.lastSeen = Date.now()
+
+    for (const app of apps.values()) {
+        if (app.boilerIds.includes(boilerId)) {
+            app.socket.send(JSON.stringify({
+                type: "boiler_update",
+                boilerId: boilerId,
+                temperature: temperature,
+                isOn: isOn
+            }))
+            break
+        }
+    }
+
+    console.log("[Boiler Update] Boiler updated:", boilerId)
 }
 
 function processAppInit(message: Message, ws: WebSocket) {
