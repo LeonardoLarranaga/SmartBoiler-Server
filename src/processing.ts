@@ -1,6 +1,9 @@
 import WebSocket from "ws"
 import { AppConnection, BoilerConnection, Message } from "./types"
 
+const MAX_TEMPERATURE = 45
+const MIN_TEMPERATURE = 25
+
 const boilers = new Map<string, BoilerConnection>()
 const apps = new Map<string, AppConnection>()
 
@@ -119,6 +122,11 @@ function processAppInit(message: Message, ws: WebSocket) {
     })
 }
 
+/**
+ * Processes a command from the app to control the boiler.
+ * The command can be to turn on/off the boiler or set its temperature.
+ * @param message A message from the app
+ */
 function processCommand(message: Message) {
     const appId = message.appId
     const boilerId = message.boilerId
@@ -128,6 +136,49 @@ function processCommand(message: Message) {
         console.error("[Command] Invalid message:", message)
         return
     }
+
+    const boiler = boilers.get(boilerId)
+    if (!boiler) {
+        console.error("[Command] Boiler not found:", boilerId)
+        return
+    }
+    if (!boiler.isConnected) {
+        console.error("[Command] Boiler not connected:", boilerId)
+        return
+    }
+
+    switch (action) {
+        case "turn_on":
+            boiler.isOn = true
+            break
+        case "turn_off":
+            boiler.isOn = false
+            break
+        case "set_temperature":
+            const temperature = message.temperature
+            if (temperature === undefined) {
+                console.error("[Command] Invalid temperature:", message)
+                return
+            }
+            if (temperature < MIN_TEMPERATURE || temperature > MAX_TEMPERATURE) {
+                console.error("[Command] Temperature out of range:", boilerId, temperature)
+                return
+            }
+            boiler.temperature = temperature
+            break
+        default:
+            console.error("[Command] Invalid action:", action)
+            return
+    }
+
+    boiler.socket.send(JSON.stringify({
+        type: "boiler_update",
+        boilerId: boilerId,
+        temperature: boiler.temperature,
+        isOn: boiler.isOn
+    }))
+
+    console.log("[Command] Command processed:", action, boilerId)
 }
 
 // MARK: Disconnections
@@ -196,6 +247,6 @@ function processAppDisconnection(appId: string) {
     }
     app.socket.terminate()
     apps.delete(appId)
-    
+
     console.log("[Disconnection] App disconnected:", appId)
 }
