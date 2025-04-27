@@ -97,6 +97,11 @@ function processBoilerUpdate(message: Message) {
     console.log("[Boiler Update] Boiler updated:", boilerId)
 }
 
+/**
+ * Adds a new app to the list of connected apps.
+ * @param message A message from the app
+ * @param ws The WebSocket connection to the app
+ */
 function processAppInit(message: Message, ws: WebSocket) {
     const appId = message.appId
     const boilerIds = message.boilerIds
@@ -105,6 +110,11 @@ function processAppInit(message: Message, ws: WebSocket) {
         console.error("[App Init] Invalid message:", message)
         return
     }
+
+    apps.set(appId, {
+        socket: ws,
+        boilerIds: boilerIds
+    })
 }
 
 function processCommand(message: Message) {
