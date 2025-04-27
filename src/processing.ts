@@ -3,6 +3,8 @@ import WebSocket, { Server } from "ws"
 const boilers = new Map<string, BoilerConnection>()
 const apps = new Map<string, AppConnection>()
 
+// MARK: Connections/Messages
+
 export function processMessage(message: Message, ws: WebSocket) {
     switch (message.type) {
         case "boiler_init":
@@ -62,4 +64,9 @@ function handleCommand(message: Message) {
         console.error("[Command] Invalid message:", message)
         return
     }
+}
+
+// MARK: Disconnections
+
+export function processDisconnection(ws: WebSocket) {
 }
