@@ -4,6 +4,7 @@ export interface BoilerConnection {
     isConnected: boolean,
     appId: string,
     temperature: number,
+    currentTemperature: number,
     isOn: boolean,
     lastSeen: number,
     socket: WebSocket
@@ -19,6 +20,7 @@ export interface Message {
     boilerId?: string,
     appId?: string,
     temperature?: number,
+    currentTemperature?: number,
     isOn?: boolean,
     action?: "turn_on" | "turn_off" | "set_temperature",
     boilerIds?: string[]

@@ -36,9 +36,10 @@ function processBoilerInit(message: Message, ws: WebSocket) {
     const boilerId = message.boilerId
     const appId = message.appId
     const temperature = message.temperature
+    const currentTemperature = message.currentTemperature
     const isOn = message.isOn
 
-    if (!ws || !boilerId || !appId || temperature === undefined || isOn === undefined) {
+    if (!ws || !boilerId || !appId || temperature === undefined || isOn === undefined || currentTemperature === undefined) {
         console.error("[Boiler Init] Invalid message:", message)
         return
     }
@@ -52,6 +53,7 @@ function processBoilerInit(message: Message, ws: WebSocket) {
         isConnected: false,
         appId: appId,
         temperature: temperature,
+        currentTemperature: currentTemperature,
         isOn: isOn,
         lastSeen: Date.now(),
         socket: ws
@@ -69,9 +71,10 @@ function processBoilerInit(message: Message, ws: WebSocket) {
 function processBoilerUpdate(message: Message, ws: WebSocket) {
     const boilerId = message.boilerId
     const temperature = message.temperature
+    const currentTemperature = message.currentTemperature
     const isOn = message.isOn
 
-    if (!boilerId || temperature === undefined || isOn === undefined) {
+    if (!boilerId || temperature === undefined || isOn === undefined || currentTemperature === undefined) {
         console.error("[Boiler Update] Invalid message:", message)
         return
     }
@@ -82,6 +85,7 @@ function processBoilerUpdate(message: Message, ws: WebSocket) {
         return
     }
     boiler.temperature = temperature
+    boiler.currentTemperature = currentTemperature
     boiler.isOn = isOn
     boiler.lastSeen = Date.now()
     boiler.socket = ws
