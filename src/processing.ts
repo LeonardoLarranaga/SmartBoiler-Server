@@ -67,6 +67,7 @@ function processBoilerInit(message: Message, ws: WebSocket) {
  * This is called when the boiler sends an update message.
  * After updating the state, the server sends the updated state to all connected apps.
  * @param message A message from the boiler
+ * @param ws The WebSocket connection to the boiler
  */
 function processBoilerUpdate(message: Message, ws: WebSocket) {
     const boilerId = message.boilerId
