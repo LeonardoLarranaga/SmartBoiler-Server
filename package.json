@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "npx ts-node src/server.ts --watch"
+    "dev": "npx ts-node src/server.ts --watch",
+    "build": "npx tsc --outDir dist"
   },
   "author": "Leonardo Larrañaga & Kadir Pérez",
   "license": "ISC",
