@@ -17,6 +17,4 @@ websocket.app.ws("/socket", (socket, _) => {
     socket.on("error", () => processDisconnection(socket))
 })
 
-server.listen(8080, () => console.log("[Server] WebSocket server is running on port 8080."))
-
 export default server
