@@ -4,6 +4,7 @@ import { processDisconnection, processMessage } from "./processing"
 
 const server = express()
 const websocket = expressWs(server)
+const port = process.env.PORT || 8080
 
 server.get("/", (_, res) => {
     res.send("SmartBoiler-KiLL Server is running")
@@ -17,6 +18,6 @@ websocket.app.ws("/socket", (socket, _) => {
     socket.on("error", () => processDisconnection(socket))
 })
 
-server.listen(8080, () => console.log("[Server] WebSocket server is running on port 8080."))
+server.listen(port, () => console.log(`[Server] WebSocket server is running on port ${port}.`))
 
 export default server
