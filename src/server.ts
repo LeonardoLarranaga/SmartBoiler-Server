@@ -1,12 +1,22 @@
-import { Server } from "ws"
+import express from "express"
+import expressWs from "express-ws"
 import { processDisconnection, processMessage } from "./processing"
 
-const server = new Server({ port: 8080 })
+const server = express()
+const websocket = expressWs(server)
 
-server.on("connection", (socket) => {
-    console.log("[Server] New connection established")
-    socket.on("message", (data) => processMessage(JSON.parse(data.toString()), socket))
-    socket.on("close", () => processDisconnection(socket))
+server.get("/", (_, res) => {
+    res.send("SmartBoiler-KiLL Server is running")
 })
 
-console.log("[Server] WebSocket server is running on ws://localhost:8080")
+websocket.app.ws("/socket", (socket, _) => {
+    console.log("[Server] New connection established")
+    
+    socket.on("message", (data) => processMessage(JSON.parse(data.toString()), socket))
+    socket.on("close", () => processDisconnection(socket))
+    socket.on("error", () => processDisconnection(socket))
+})
+
+server.listen(8080, () => console.log("[Server] WebSocket server is running on port 8080."))
+
+export default server
